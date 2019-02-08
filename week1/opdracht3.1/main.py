@@ -1,13 +1,11 @@
 from scipy.spatial import distance
 import numpy as np
 
-
 def loadCsvToNumpy(filename):
     return np.genfromtxt(filename, delimiter=";", usecols=[1, 2, 3, 4, 5, 6, 7], converters={
         5: lambda s: 0 if s == b"-1" else float(s), 7: lambda s: 0 if s == b"-1" else float(s)})
 
-
-def generateLabels(dates):
+def generateLabelsData(dates):
     labels = []
     for label in dates:
         if label < 20000301:
@@ -22,65 +20,81 @@ def generateLabels(dates):
             labels.append("winter")
     return labels
 
-def k_NearestNeighbours(data, testpoint, datalabels, validationlabels, k):
-    delta = []
-    for i in range(0, len(dates)):
-        delta.append(distance.euclidean(testpoint, data[i]))
+def generateLabelsValidation(dates):
+    labels = []
+    for label in dates:
+        if label < 20010301:
+            labels.append("winter")
+        elif 20010301 <= label < 20010601:
+            labels.append("lente")
+        elif 20010601 <= label < 20010901:
+            labels.append("zomer")
+        elif 20010901 <= label < 20011201:
+            labels.append("herfst")
+        else:  # from 01-12 to end of year
+            labels.append("winter")
+    return labels
 
-    nearest = [-1, -1, -1, -1, -1]
-    nearestindex = [0, 0, 0, 0, 0]
+def k_NearestNeighbours(data, testpoint, datalabels, k):
+    distances = []
+    nearest = [-1]*k
+    nearestIndex = [0]*k
 
-    for i in range(0, len(delta)):
-        for j in range(0, k):
-            if delta[i] < nearest[j] or nearest[j] == -1:
-                nearest[j] = delta[i]
-                nearestindex[j] = i
-                break
-    print(nearest)
-    print(nearestindex)
-    # for i in range(0, len(nearestindex)):
-    #     print(labels[nearestindex[i]])
-    return mostOccurringLabel(nearest, labels)
+    for i in range(0, len(data)):
+        distances.append([])
+        distances[i].append(distance.euclidean(testpoint, data[i]))
+        distances[i].append(i)
+
+    distances.sort()
+
+    for i in range(0, k):
+        nearest[i] = distances[i][0]
+        nearestIndex[i] = distances[i][1]
+
+    return mostOccurringLabel(nearestIndex, datalabels)
 
 def mostOccurringLabel(array, label):
     valueCounts = [0,0,0,0]
-    labels = ['winter', 'lente', 'zomer', 'herfst']
-    for i in range(0, len(array)):
-        if label[i] == 'winter':
+    defaultlabels = ['winter', 'lente', 'zomer', 'herfst']
+    for item in array:
+        if label[item] == defaultlabels[0]:
             valueCounts[0] += 1
-        elif label[i] == 'lente':
+        elif label[item] == defaultlabels[1]:
             valueCounts[1] += 1
-        elif label[i] == 'zomer':
+        elif label[item] == defaultlabels[2]:
             valueCounts[2] += 1
-        elif label[i] == 'herfts':
+        elif label[item] == defaultlabels[3]:
             valueCounts[3] += 1
 
         else:
             raise ValueError
+    return defaultlabels[valueCounts.index(max(valueCounts))]
 
+def main():
+    data = loadCsvToNumpy('dataset1.csv')
+    dates = np.genfromtxt("dataset1.csv", delimiter=";", usecols=[0])
+    labels = generateLabelsData(dates)
 
-    return labels[valueCounts.index(max(valueCounts))]
+    validationData = loadCsvToNumpy('validation1.csv')
+    validationDates = np.genfromtxt("validation1.csv", delimiter=";", usecols=[0])
+    validationLabels = generateLabelsValidation(validationDates)
 
+    best = [0, 0]
+    for k in range(3,100):
+        correct = 0
+        false = 0
 
+        for i in range(0, len(validationData)):
+            if(k_NearestNeighbours(data, validationData[i], labels, k) == validationLabels[i]):
+                correct += 1
+            else:
+                false += 1
+        percentage = [((correct/(correct+false))*100), k]
+        if percentage[0] > best[0]:
+            best = percentage
+    print(best)
 
-
-
-
-data = loadCsvToNumpy('dataset1.csv')
-# print(data)
-dates = np.genfromtxt("dataset1.csv", delimiter=";", usecols=[0])
-labels = generateLabels(dates)
-
-# print(labels)
-validationData = loadCsvToNumpy('validation1.csv')
-
-validationDates = np.genfromtxt("validation1.csv", delimiter=";", usecols=[0])
-validationLabels = generateLabels(validationDates)
-
-testpoint = [10,20,30,30,30,30,30]
-
-k = 5
-for i in range(0, len(validationData)):
-    print(k_NearestNeighbours(data, validationData[i], labels, validationLabels, k))
+if __name__ == "__main__":
+    main()
 
 
