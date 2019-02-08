@@ -78,8 +78,10 @@ def main():
     validationData = loadCsvToNumpy('validation1.csv')
     validationDates = np.genfromtxt("validation1.csv", delimiter=";", usecols=[0])
     validationLabels = generateLabelsValidation(validationDates)
+    
+    daysData = loadCsvToNumpy('days.csv')
 
-    best = [0, 0]
+    bestK = [0, 0]
     for k in range(3,100):
         correct = 0
         false = 0
@@ -90,9 +92,11 @@ def main():
             else:
                 false += 1
         percentage = [((correct/(correct+false))*100), k]
-        if percentage[0] > best[0]:
-            best = percentage
-    print(best)
+        if percentage[0] > bestK[0]:
+            bestK = percentage
+    print('Best k: %d \nPercentage correct: %d%% ' % (bestK[1], bestK[0]))
+    for item in daysData:
+        print(k_NearestNeighbours(data, item, labels, bestK[1]))
 
 if __name__ == "__main__":
     main()
