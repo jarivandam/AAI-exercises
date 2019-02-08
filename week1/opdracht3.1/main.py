@@ -22,6 +22,48 @@ def generateLabels(dates):
             labels.append("winter")
     return labels
 
+def k_NearestNeighbours(data, testpoint, datalabels, validationlabels, k):
+    delta = []
+    for i in range(0, len(dates)):
+        delta.append(distance.euclidean(testpoint, data[i]))
+
+    nearest = [-1, -1, -1, -1, -1]
+    nearestindex = [0, 0, 0, 0, 0]
+
+    for i in range(0, len(delta)):
+        for j in range(0, k):
+            if delta[i] < nearest[j] or nearest[j] == -1:
+                nearest[j] = delta[i]
+                nearestindex[j] = i
+                break
+    print(nearest)
+    print(nearestindex)
+    # for i in range(0, len(nearestindex)):
+    #     print(labels[nearestindex[i]])
+    return mostOccurringLabel(nearest, labels)
+
+def mostOccurringLabel(array, label):
+    valueCounts = [0,0,0,0]
+    labels = ['winter', 'lente', 'zomer', 'herfst']
+    for i in range(0, len(array)):
+        if label[i] == 'winter':
+            valueCounts[0] += 1
+        elif label[i] == 'lente':
+            valueCounts[1] += 1
+        elif label[i] == 'zomer':
+            valueCounts[2] += 1
+        elif label[i] == 'herfts':
+            valueCounts[3] += 1
+
+        else:
+            raise ValueError
+
+
+    return labels[valueCounts.index(max(valueCounts))]
+
+
+
+
 
 
 data = loadCsvToNumpy('dataset1.csv')
@@ -37,22 +79,8 @@ validationLabels = generateLabels(validationDates)
 
 testpoint = [10,20,30,30,30,30,30]
 
-delta = []
-k = 3
-for i in range(0, len(dates)):
-    delta.append(distance.euclidean(testpoint, data[i]))
+k = 5
+for i in range(0, len(validationData)):
+    print(k_NearestNeighbours(data, validationData[i], labels, validationLabels, k))
 
-nearest = [-1, -1, -1]
-nearestindex = [0, 0, 0]
-for i in range(0, len(delta)):
-    for j in range(0, k):
-        if delta[i] < nearest[j] or nearest[j] == -1:
-            nearest[j] = delta[i]
-            nearestindex[j] = i
-            # print(labels[i])
-            break
-print(nearest)
-print(nearestindex)
-for i in range(0, len(nearestindex)):
-    print(labels[nearestindex[i]])
 
