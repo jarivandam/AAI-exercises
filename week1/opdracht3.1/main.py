@@ -1,9 +1,11 @@
 from scipy.spatial import distance
 import numpy as np
 
+
 def loadCsvToNumpy(filename):
     return np.genfromtxt(filename, delimiter=";", usecols=[1, 2, 3, 4, 5, 6, 7], converters={
         5: lambda s: 0 if s == b"-1" else float(s), 7: lambda s: 0 if s == b"-1" else float(s)})
+
 
 def generateLabelsData(dates):
     labels = []
@@ -20,6 +22,7 @@ def generateLabelsData(dates):
             labels.append("winter")
     return labels
 
+
 def generateLabelsValidation(dates):
     labels = []
     for label in dates:
@@ -35,15 +38,14 @@ def generateLabelsValidation(dates):
             labels.append("winter")
     return labels
 
-def k_NearestNeighbours(data, testpoint, datalabels, k):
+
+def k_NearestNeighbours(data: list, testpoint, datalabels: list, k: int) -> str:
     distances = []
     nearest = [-1]*k
     nearestIndex = [0]*k
 
     for i in range(0, len(data)):
-        distances.append([])
-        distances[i].append(distance.euclidean(testpoint, data[i]))
-        distances[i].append(i)
+        distances.append([distance.euclidean(testpoint, data[i]), i])
 
     distances.sort()
 
@@ -53,22 +55,26 @@ def k_NearestNeighbours(data, testpoint, datalabels, k):
 
     return mostOccurringLabel(nearestIndex, datalabels)
 
-def mostOccurringLabel(array, label):
-    valueCounts = [0,0,0,0]
-    defaultlabels = ['winter', 'lente', 'zomer', 'herfst']
-    for item in array:
-        if label[item] == defaultlabels[0]:
-            valueCounts[0] += 1
-        elif label[item] == defaultlabels[1]:
-            valueCounts[1] += 1
-        elif label[item] == defaultlabels[2]:
-            valueCounts[2] += 1
-        elif label[item] == defaultlabels[3]:
-            valueCounts[3] += 1
 
+def getStringOfLabelPostion(position: int, label: list) -> str:
+    return label[position]
+
+
+def mostOccurringLabel(arr: list, labels: list) -> str:
+    countDict = dict()
+    mostOccuringString = ""
+    mostOccoringNumber = 0
+    for position in arr:
+        labelString = getStringOfLabelPostion(position, labels)
+        if labelString in countDict.keys():
+            countDict[labelString] += 1
         else:
-            raise ValueError
-    return defaultlabels[valueCounts.index(max(valueCounts))]
+            countDict[labelString] = 1
+        if countDict[labelString] > mostOccoringNumber:
+            mostOccuringString = labelString
+            mostOccoringNumber = countDict[labelString]
+    return mostOccuringString
+
 
 def main():
     data = loadCsvToNumpy('dataset1.csv')
@@ -76,13 +82,14 @@ def main():
     labels = generateLabelsData(dates)
 
     validationData = loadCsvToNumpy('validation1.csv')
-    validationDates = np.genfromtxt("validation1.csv", delimiter=";", usecols=[0])
+    validationDates = np.genfromtxt(
+        "validation1.csv", delimiter=";", usecols=[0])
     validationLabels = generateLabelsValidation(validationDates)
-    
+
     daysData = loadCsvToNumpy('days.csv')
 
     bestK = [0, 0]
-    for k in range(3,100):
+    for k in range(3, 99):
         correct = 0
         false = 0
 
@@ -98,7 +105,9 @@ def main():
     for item in daysData:
         print(k_NearestNeighbours(data, item, labels, bestK[1]))
 
+
 if __name__ == "__main__":
+    import time
+    start_time = time.time()
     main()
-
-
+    print("--- %s seconds ---" % (time.time() - start_time))
