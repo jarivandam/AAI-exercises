@@ -1,9 +1,12 @@
 from scipy.spatial import distance
 import numpy as np
+import random
+
 
 def loadCsvToNumpy(filename):
     return np.genfromtxt(filename, delimiter=";", usecols=[1, 2, 3, 4, 5, 6, 7], converters={
         5: lambda s: 0 if s == b"-1" else float(s), 7: lambda s: 0 if s == b"-1" else float(s)})
+
 
 def generateLabelsData(dates):
     labels = []
@@ -20,6 +23,7 @@ def generateLabelsData(dates):
             labels.append("winter")
     return labels
 
+
 def generateLabelsValidation(dates):
     labels = []
     for label in dates:
@@ -35,15 +39,53 @@ def generateLabelsValidation(dates):
             labels.append("winter")
     return labels
 
+
+def findCentroids(data: list, numberOfCentroids: int):
+    centroids = []
+    for i in range(0, numberOfCentroids):
+        centroid = data[random.randint(0, len(data))]
+        centroids.append(centroid)
+    return centroids
+
+
+def takeSecond(elem):
+    return elem[1]
+
+
+def makeClusters(data: list, centroids: list, k: int):
+    clusters = [[]] * k
+    for i in range(len(data)):
+        distances = []
+        for j in range(len(centroids)):
+            d = distance.euclidean(data[i], centroids[j])
+            distances.append((d, i, j))
+        distances.sort(key=takeSecond)
+        clusters[distances[0][2]].append(data[distances[0][1]])
+
+    return clusters
+
+
+def calcMeanPointInCluster(cluster: list, centroid):
+    meanPoint = 0
+    return meanPoint
+
+
 def main():
     data = loadCsvToNumpy('dataset1.csv')
     dates = np.genfromtxt("dataset1.csv", delimiter=";", usecols=[0])
     labels = generateLabelsData(dates)
 
     validationData = loadCsvToNumpy('validation1.csv')
-    validationDates = np.genfromtxt("validation1.csv", delimiter=";", usecols=[0])
+    validationDates = np.genfromtxt(
+        "validation1.csv", delimiter=";", usecols=[0])
     validationLabels = generateLabelsValidation(validationDates)
+    k = 4
+    centroids = findCentroids(data, k)
+
+    clusters = makeClusters(data, centroids, k)
+
+    calcMeanPointInCluster(clusters[0], centroids[0])
+
 
 if __name__ == "__main__":
     main()
-
