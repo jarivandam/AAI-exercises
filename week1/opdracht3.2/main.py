@@ -48,10 +48,6 @@ def findCentroids(data: list, numberOfCentroids: int):
     return centroids
 
 
-def takeSecond(elem):
-    return elem[1]
-
-
 def makeClusters(data: list, centroids: list, k: int):
     clusters = [[]] * k
     for i in range(len(data)):
@@ -59,7 +55,7 @@ def makeClusters(data: list, centroids: list, k: int):
         for j in range(len(centroids)):
             d = distance.euclidean(data[i], centroids[j])
             distances.append((d, i, j))
-        distances.sort(key=takeSecond)
+        distances.sort(key=lambda x: x[1])
         clusters[distances[0][2]].append(data[distances[0][1]])
 
     return clusters
@@ -75,10 +71,6 @@ def main():
     dates = np.genfromtxt("dataset1.csv", delimiter=";", usecols=[0])
     labels = generateLabelsData(dates)
 
-    validationData = loadCsvToNumpy('validation1.csv')
-    validationDates = np.genfromtxt(
-        "validation1.csv", delimiter=";", usecols=[0])
-    validationLabels = generateLabelsValidation(validationDates)
     k = 4
     centroids = findCentroids(data, k)
 
