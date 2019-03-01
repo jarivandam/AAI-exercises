@@ -7,7 +7,7 @@ def NorGateNeuron():
     print(NORGate.output)
 
 
-NorGateNeuron()
+# NorGateNeuron()
 
 
 def Adder():
@@ -39,4 +39,14 @@ def Adder():
     print("Output: " + str(output))
 
 
-Adder()
+# Adder()
+def DeltaRule():
+    AndGate = Neuron([1, 1], [0.2, 0.8], threshold=1)
+    AndGate.update(1)
+    AndGate.updateInputs([1, 0])
+    AndGate.update(0)
+    AndGate.updateInputs([0, 1])
+    AndGate.update(0)
+
+
+DeltaRule()

@@ -1,8 +1,12 @@
-class Neuron():
-    """ Input in form of [value,weight]"""
+import numpy
+from numpy import tanh as tanh
+LearnRate = 0.1
 
-    def __init__(self, inputs, threshold):
+
+class Neuron():
+    def __init__(self, inputs, weights, threshold):
         self.inputs = inputs
+        self.weights = weights
         self.output = None
         self.threshold = threshold
 
@@ -15,3 +19,18 @@ class Neuron():
         else:
             self.output = 1
         return self.output
+
+    def updateInputs(self, newInputs):
+        self.inputs = newInputs
+
+    def update(self, desiredActivation):
+        result = 0
+        for i in range(len(self.inputs)):
+            result += self.inputs[i] * self.weights[i]
+
+        for i in range(len(self.inputs)):
+            self.weights[i] = (self.weights[i]+LearnRate*self.inputs[i]*(1-tanh(tanh(result)))
+                               * (desiredActivation-tanh(result)))
+
+        print(self.inputs)
+        print(self.weights)
